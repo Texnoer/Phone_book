@@ -6,20 +6,52 @@ with open("phonebook_raw.csv", encoding='utf-8') as f:
   rows = csv.reader(f, delimiter=",")
   contacts_list = list(rows)
 
-# 1.поместить Фамилию, Имя и Отчество человека в поля lastname, firstname и surname соответственно.
-# В записной книжке изначально может быть Ф + ИО, ФИО, а может быть сразу правильно: Ф+И+О;
-# 2. привести все телефоны в формат +7(999)999-99-99. Если есть добавочный номер, формат будет такой:
-# +7(999)999-99-99 доб.9999
-# 3. объединить все дублирующиеся записи о человеке в одну.
-# TODO 1: выполните пункты 1-3 ДЗ
-# rr = re.sub(r'[()]', str(contacts_list))
-# pprint(rr)
-contacts_slit = re.compile(r'(\+7|8)+\s*\(*(\d{3})\)*[-\s]?(\d{3})[-\s]?(\d{2})[\s-]?(\d+)')
-text_2 = contacts_slit.sub('+7(\\2)-\\3-\\4-\\5', str(contacts_list))
-pprint(text_2)
-# TODO 2: сохраните получившиеся данные в другой файл
+
+def list_update(contacts_list):
+    new_list =[]
+    for contacts in contacts_list:
+        new_data = []
+        name = ",".join(contacts[0:3])
+        result = re.findall(r'(\w+)', name)
+        while len(result) < 3:
+            result.append('')
+        new_data += result
+        new_data.append(contacts[3])
+        new_data.append(contacts[4])
+        phone_pattern = re.compile(patteren)
+        changed_phone = phone_pattern.sub(sub_patteren, contacts[5])
+        new_data.append(changed_phone)
+        new_data.append(contacts[6])
+        new_list.append(new_data)
+    return new_list
+
+
+# удаление дубликата
+def remove_duplicates(new_list):
+    phone_book = {}
+    for contact in new_list:
+        if contact[0] in phone_book:
+            contact_data = phone_book[contact[0]]
+            for i in range(len(contact_data)):
+                if contact[i]:
+                    contact_data[i] = contact[i]
+        else:
+            phone_book[contact[0]] = contact
+    return list(phone_book.values())
+
+
 # код для записи файла в формате CSV
-with open("phonebook.csv", "w", encoding='utf-8') as f:
-  datawriter = csv.writer(f, delimiter=',')
-  # Вместо contacts_list подставьте свой список
-  datawriter.writerows(text_2)
+def write_contact(new_list):
+    with open("phonebook.csv", "w", encoding='utf-8') as f:
+      datawriter = csv.writer(f, delimiter=',')
+      datawriter.writerows(new_list)
+
+
+if __name__ == '__main__':
+    patteren = r'(\+7|8)+\s*\(*(\d{3})\)*[-\s]?(\d{3})[-\s]?(\d{2})[\s-]?(\d+)\s*(\(*)(\w\w\w\.)*\s*(\d{4})*(\))*'
+    sub_patteren = r'+7(\2)-\3-\4-\5 \7\8'
+    up_new_list = list_update(contacts_list)
+    contact_book = remove_duplicates(up_new_list)
+    write_contact(contact_book)
+    print(contact_book)
+
